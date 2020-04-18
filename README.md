@@ -1,4 +1,4 @@
-# lucas-kanade-tracker
+# Lucas-Kanade-Tracker
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://github.com/urastogi885/lucas-kanade-tracker/blob/master/LICENSE)
 
 ## Overview
