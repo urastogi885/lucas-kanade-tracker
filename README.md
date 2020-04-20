@@ -20,7 +20,7 @@ dataset [here](https://drive.google.com/open?id=1gHAVRtSSuB_yo6xt2TIQl84hBLBkNz3
 ```
 sudo apt install python3 python3-tk
 sudo apt install python3-pip
-pip3 install numpy opencv-python
+pip3 install numpy opencv-python scipy
 ```
 
 - Check if your system successfully installed all the dependencies
@@ -33,6 +33,7 @@ running the below commands)
 import tkinter
 import numpy
 import cv2
+import scipy
 ```
 
 ## Run
@@ -45,10 +46,24 @@ too cumbersome for you to reference the correct location of the file.
 ```
 https://github.com/urastogi885/lucas-kanade-tracker
 cd lucas-kanade-tracker/Code
-python3 utils/lucas-kanade-tracker.py dataset_location
+python3 main.py dataset dataset_location output_location select_roi
 ```
 
+- If you have a compressed version of the project, extract it, go into project directory, open the terminal by 
+right-clicking on an empty space, and type:
+
+```
+cd Code/
+python3 main.py dataset dataset_location output_location select_roi
+```
 - For instance:
 ```
-python3 utils/lucas-kanade-tracker.py ../Bolt2/img
+python3 main.py baby ../DragonBaby/DragonBaby/img ../DragonBaby/output.avi 0
 ```
+
+- Use the following to define the dataset-parameter in the input arguments:
+	- car - Car Dataset
+	- bolt - Bolt Dataset
+	- baby - Dragon Baby Dataset
+- For further documentation on the input arguments, refer 
+[*main.py*](https://github.com/urastogi885/lucas-kanade-tracker/blob/master/Code/main.py)
