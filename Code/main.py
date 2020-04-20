@@ -4,7 +4,10 @@ from numpy import zeros
 from utils import lk_tracker
 
 """
+:param dataset: Dataset to be used for tracking
 :param dataset_location: Path of dataset for tracking relative to the project folder
+:param output_location: Path of the output video relative to the project folder
+:param select_roi: 1 to select a new roi and 0 to use saved roi points 
 """
 script, dataset, dataset_location, output_location, select_roi = argv
 
