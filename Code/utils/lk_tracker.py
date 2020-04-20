@@ -1,5 +1,6 @@
 import numpy as np
 from glob import glob
+from ast import literal_eval
 from scipy.interpolate import RectBivariateSpline as rbs
 
 
@@ -18,6 +19,26 @@ def extract_locations(dataset_location):
     filename_array.sort()
     return filename_array
 
+
+def get_roi_points(dataset):
+    """
+    Retrieve saved roi points for best results
+    :param dataset: a string representing the dataset user wants to run
+    :return: a list containing ROI points
+    """
+    dataset = str(dataset).lower()
+    with open('utils/roi.txt', 'r') as roi:
+        template = roi.readlines()
+        if dataset == 'car':
+            template = template[0].split(':')
+        elif dataset == 'baby':
+            template = template[1].split(':')
+        elif dataset == 'bolt':
+            template = template[2].split(':')
+        else:
+            print('Error: No ROI points for the given dataset! Choose ROI')
+            return None
+    return list(literal_eval(template[1]))
 
 def affine_lk_tracker(img, tmp, rect, warp_prev):
     """
@@ -53,8 +74,9 @@ def affine_lk_tracker(img, tmp, rect, warp_prev):
     spline_grad_y = rbs(x, y, grad_y)
     # Define a 4x4 jacobian
     jacobian = np.array([[1, 0], [0, 1]])
+    count = 0
     # Iterate until convergence
-    while np.square(error).sum() > convergence_threshold:
+    while np.linalg.norm(error) > convergence_threshold:
         # Interpolate warping points from top-left to bottom-right corner
         warp_a = np.linspace(start_point[0] + warp_prev[0], opp_corner_point[0] + warp_prev[0], 87)
         warp_b = np.linspace(start_point[1] + warp_prev[1], opp_corner_point[1] + warp_prev[1], 36)
@@ -73,8 +95,15 @@ def affine_lk_tracker(img, tmp, rect, warp_prev):
         # Calculate the change in intensities from the template image to the current image frame
         change = (intensities_tmp - intensities_img).reshape(-1, 1)
         # Evaluate errors
-        error = np.linalg.inv(hess) @ hessian.T @ change
-        warp_prev[0] += error[0, 0]
-        warp_prev[1] += error[1, 0]
+        try:
+            error = np.linalg.inv(hess) @ hessian.T @ change
+            warp_prev[0] += error[0, 0]
+            warp_prev[1] += error[1, 0]
+        except np.linalg.LinAlgError:
+            print('ERROR: Singular Matrix')
+            break
+        count += 1
+        if count > 200:
+            break
 
     return warp_prev
