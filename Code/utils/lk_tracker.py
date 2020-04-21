@@ -40,6 +40,7 @@ def get_roi_points(dataset):
             return None
     return list(literal_eval(template[1]))
 
+
 def affine_lk_tracker(img, tmp, rect, warp_prev):
     """
     Method to track a template frame in a new image frame using lucas kanade tracking algorithm
@@ -66,6 +67,9 @@ def affine_lk_tracker(img, tmp, rect, warp_prev):
     # Get bivariate spline of template image and evaluate intensities over interpolated points
     spline_tmp = rbs(x, y, tmp)
     intensities_tmp = spline_tmp.ev(mesh_b, mesh_a)
+    # Adjust brightness scale
+    # Uncomment to scale brightness in the roi region
+    # img[rect[1]:rect[1] + rect[3], rect[0]:rect[0] + rect[2]] = adjust_brightness(img, tmp, rect)
     # Get bivariate spline and gradient of current image frame
     spline_img = rbs(x, y, img)
     grad_y, grad_x = np.gradient(img)
@@ -94,16 +98,52 @@ def affine_lk_tracker(img, tmp, rect, warp_prev):
         hess = hessian.T @ hessian
         # Calculate the change in intensities from the template image to the current image frame
         change = (intensities_tmp - intensities_img).reshape(-1, 1)
+        # Uncomment to add huber loss implementation
+        change = get_huber_loss(change)
         # Evaluate errors
         try:
             error = np.linalg.inv(hess) @ hessian.T @ change
             warp_prev[0] += error[0, 0]
             warp_prev[1] += error[1, 0]
         except np.linalg.LinAlgError:
-            print('ERROR: Singular Matrix')
             break
+        # Increment iteration count
         count += 1
+        # Terminate convergence after 200 iterations
         if count > 200:
             break
 
     return warp_prev
+
+
+def adjust_brightness(img, tmp, roi):
+    """
+    Scale brightness to maintain similar brightness in the tracking region
+    :param img: current image frame to track template
+    :param tmp: template image frame
+    :param roi: bounding box for the ROI in open-cv rect format
+    :return: current image frame with brightness adjustment
+    """
+    tmp = tmp[roi[1]:roi[1] + roi[3], roi[0]:roi[0] + roi[2]]
+    img = img[roi[1]:roi[1] + roi[3], roi[0]:roi[0] + roi[2]]
+    tmp_mean = np.full(img.shape, np.mean(tmp))
+    img_mean = np.full(img.shape, np.mean(img))
+    std_ = np.std(img)
+    z_score = np.true_divide((img - tmp_mean), std_)
+    d_mean = np.mean(img) - np.mean(tmp)
+    if d_mean < 0.1:
+        shifted_img = (z_score * std_) + img_mean
+    else:
+        shifted_img = -(z_score * std_) + img_mean
+
+    return shifted_img.astype(dtype=np.uint8)
+
+
+def get_huber_loss(change):
+    """
+    Implement a huber-loss method
+    :param change: difference between template and image
+    :return:
+    """
+    huber_thresh = 0.004
+    return (huber_thresh ** 2) * (np.sqrt(1 + (change / huber_thresh) ** 2) - 1)
