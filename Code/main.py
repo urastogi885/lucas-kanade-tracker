@@ -23,8 +23,8 @@ if __name__ == '__main__':
     template_image = cv2.cvtColor(template_image, cv2.COLOR_BGR2GRAY)
     # Add total least squares method for robustness
     template_image = cv2.equalizeHist(template_image) / 255
-    # gamma correction
-    template_image = np.array(255*(template_image / 255) ** 0.2, dtype = 'uint8')
+    # Apply gamma correction
+    template_image = np.array(255*(template_image / 255) ** 0.2, dtype='uint8')
     warp_prev = zeros(2)
     # Retrieve saved roi points for best results
     roi_points = lk_tracker.get_roi_points(dataset)
@@ -33,12 +33,15 @@ if __name__ == '__main__':
     if int(select_roi):
         roi_points = list(cv2.selectROI('ROI', template_image))
     prev_box = roi_points[0], roi_points[1]
+    count = 0
     for img_location in img_locations:
+        count += 1
         img_frame = cv2.imread(img_location)
         gray = cv2.cvtColor(img_frame, cv2.COLOR_BGR2GRAY)
         # Add total least squares method for robustness
         gray = cv2.equalizeHist(gray) / 255
-        gray = np.array(255*(gray / 255) ** 0.2, dtype = 'uint8')
+        # Apply gamma correction
+        gray = np.array(255*(gray / 255) ** 0.2, dtype='uint8')
         warp_prev = lk_tracker.affine_lk_tracker(gray, template_image, roi_points, warp_prev)
         bounding_box = roi_points[0] + int(warp_prev[0]), roi_points[1] + int(warp_prev[1])
         if 0 > bounding_box[0] or bounding_box[0] >= width or 0 > bounding_box[1] or bounding_box[1] >= height:
