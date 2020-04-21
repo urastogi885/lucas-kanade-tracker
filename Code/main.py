@@ -1,5 +1,6 @@
 import cv2
 from sys import argv
+import numpy as np
 from numpy import zeros
 from utils import lk_tracker
 
@@ -10,7 +11,6 @@ from utils import lk_tracker
 :param select_roi: 1 to select a new roi and 0 to use saved roi points 
 """
 script, dataset, dataset_location, output_location, select_roi = argv
-
 
 if __name__ == '__main__':
     # Get full image-locations from the given path
@@ -23,6 +23,8 @@ if __name__ == '__main__':
     template_image = cv2.cvtColor(template_image, cv2.COLOR_BGR2GRAY)
     # Add total least squares method for robustness
     template_image = cv2.equalizeHist(template_image) / 255
+    # gamma correction
+    template_image = np.array(255*(template_image / 255) ** 0.2, dtype = 'uint8')
     warp_prev = zeros(2)
     # Retrieve saved roi points for best results
     roi_points = lk_tracker.get_roi_points(dataset)
@@ -36,6 +38,7 @@ if __name__ == '__main__':
         gray = cv2.cvtColor(img_frame, cv2.COLOR_BGR2GRAY)
         # Add total least squares method for robustness
         gray = cv2.equalizeHist(gray) / 255
+        gray = np.array(255*(gray / 255) ** 0.2, dtype = 'uint8')
         warp_prev = lk_tracker.affine_lk_tracker(gray, template_image, roi_points, warp_prev)
         bounding_box = roi_points[0] + int(warp_prev[0]), roi_points[1] + int(warp_prev[1])
         if 0 > bounding_box[0] or bounding_box[0] >= width or 0 > bounding_box[1] or bounding_box[1] >= height:
