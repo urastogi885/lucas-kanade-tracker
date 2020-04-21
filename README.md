@@ -58,9 +58,9 @@ python3 main.py dataset dataset_location output_location select_roi
 ```
 - For instance:
 ```
-python3 main.py baby ../DragonBaby/DragonBaby/img ../DragonBaby/output.avi 0
+python3 main.py baby ../DragonBaby/DragonBaby/img/ ../DragonBaby/output.avi 0
 ```
-
+- Choose select_roi as "0" to use saved ROI points and "1" to select ROI region yourself.
 - Use the following to define the dataset-parameter in the input arguments:
 	- car - Car Dataset
 	- bolt - Bolt Dataset
