@@ -13,7 +13,7 @@ The output videos can be seen [*here*](https://drive.google.com/open?id=1LI2pedr
 
 - Python3
 - Python3-tk
-- Python3 Libraries: Numpy, OpenCV-Python
+- Python3 Libraries: Numpy, OpenCV-Python, Scipy
 
 ## Install Dependencies
 
